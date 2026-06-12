@@ -1,21 +1,37 @@
-print("="*60)
-print("DDSS PORTAL SCREEN")
-print("="*60)
+import streamlit as st
+import pandas as pd
 
-print("\nSUPPLIER PERFORMANCE\n")
+st.title("🏭 PORTAL SCREEN")
 
-print("ASK AUTOMOTIVE")
-print("Accuracy : 50%")
-print("Risk      : 50%")
+# Read CSV
+df = pd.read_csv("data/supplier_delivery.csv")
 
-print()
+# Calculate accuracy and risk
+summary = []
 
-print("VARROC ENGINEERING")
-print("Accuracy : 0%")
-print("Risk      : 100%")
+for supplier in df["Supplier_Name"].unique():
 
-print()
+    supplier_df = df[df["Supplier_Name"] == supplier]
 
-print("FIEM")
-print("Accuracy : 100%")
-print("Risk      : 0%")
+    total = len(supplier_df)
+
+    on_time = (
+        supplier_df["Actual_Delivery_Time"]
+        <= supplier_df["Planned_Delivery_Time"]
+    ).sum()
+
+    accuracy = round((on_time / total) * 100, 0)
+
+    risk = 100 - accuracy
+
+    summary.append(
+        {
+            "Supplier": supplier,
+            "Accuracy (%)": accuracy,
+            "Risk (%)": risk
+        }
+    )
+
+result = pd.DataFrame(summary)
+
+st.dataframe(result, use_container_width=True)
